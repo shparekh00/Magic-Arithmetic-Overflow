@@ -50,19 +50,19 @@ unhandled:  .asciiz     "Unhandled exception\n"
     srl     $t0, $t0, 2
     andi    $t0, $t0, 0x1F      # extract ExcCode in $t0
     li      $t1, 12             # arithmetic overflow code
-    bne     $a0, $t1, notOvf    # check if code matches ovf code
+    bne     $t0, $t1, notOvf    # check if code matches ovf code
     
-    mfc0    $a1, $14            # move EPC address of faulty instruction into $t0
+    mfc0    $a1, $14            # move EPC address of faulty instruction into $a1
     lw		$t2, 0($a1)		    # load contents of faulty instruction into $t2
-    addiu   $a1, $a1, 4         # move to next instruction
-    
+            
+
     # determine if Type R or Type I
     srl     $t3, $t2, 26        # get opcode of instruction into $t3
     bne		$t3, $zero, TypeI	# if $t2 !=zero then TypeI
     
     # Get value of $rd, and store magic number
-    srl     $t4, $t2, 16
-    sll     $t4, $t4, 11        # access bits 11-15 of instruction for $rd
+    sll     $t4, $t2, 16
+    srl     $t4, $t4, 27        # access bits 11-15 of instruction for $rd
     sll	    $t4, $t4, 2			# multiply by 4
     li      $t3, 4
     sub     $t4,$t4, $t3        # subtract 4 from address
@@ -72,11 +72,10 @@ unhandled:  .asciiz     "Unhandled exception\n"
     j       continue
  
  TypeI:
-    srl     $t4, $t2, 22
-    sll     $t4, $t4, 16        # access bits 11-15 of instruction for $rd
+    sll     $t4, $t2, 11        # access bits 11-15 of instruction for $rd
+    srl     $t4, $t4, 27
     sll	    $t4, $t4, 2			# multiply by 4
-    li      $t1, 4
-    sub     $t4,$t4, $t1        # subtract 4 from address
+    addiu   $t4, $t4, -4        # subtract 4 from address
     addu    $t5, $k0, $t4       # move to $rd address in backup
     li      $t6, 42             # load magic number
     sw      $t6, 0($t5)         # save magic number in $rt
@@ -90,9 +89,10 @@ notOvf:
     li      $a0, 1              # exit with error code 1
     li      $v0, 17
     syscall
-    #j 		continue			# jump to $ra
     
 continue:
+    addiu   $a1, $a1, 4         # move to next instruction
+    mtc0    $a1, $14            # move address of next instruction back into $14 
 # Epilogue              
     la      $k0, backup	
     lw      $ra, 112($k0)
