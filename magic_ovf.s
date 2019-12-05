@@ -3,7 +3,7 @@ PRINT_STR = 4
 
 # System data
     .kdata
-backup:     .space      116         # save all user registers
+backup:     .space      124         # save all user registers
 unhandled:  .asciiz     "Unhandled exception\n"
 
 # System code
@@ -40,10 +40,10 @@ unhandled:  .asciiz     "Unhandled exception\n"
     sw      $s7, 88($k0)
     sw      $t8, 92($k0)
     sw      $t9, 96($k0)
-    sw      $gp, 100($k0)
-    sw      $sp, 104($k0)
-    sw      $fp, 108($k0)
-    sw      $ra, 112($k0)
+    sw      $gp, 108($k0)
+    sw      $sp, 112($k0)
+    sw      $fp, 116($k0)
+    sw      $ra, 120($k0)
 
 # Body
     mfc0    $t0, $13            # move cause cause register into $t0
@@ -95,10 +95,10 @@ continue:
     mtc0    $a1, $14            # move address of next instruction back into $14 
 # Epilogue              
     la      $k0, backup	
-    lw      $ra, 112($k0)
-    lw      $fp, 108($k0)
-    lw      $sp, 104($k0)
-    lw      $gp, 100($k0)
+    lw      $ra, 120($k0)
+    lw      $fp, 116($k0)
+    lw      $sp, 112($k0)
+    lw      $gp, 108($k0)
     lw      $t9, 96($k0)
     lw      $t8, 92($k0)
     lw      $s7, 88($k0)
